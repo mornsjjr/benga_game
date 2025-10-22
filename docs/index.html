@@ -1,0 +1,301 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Jenga — English Questions (Genially)</title>
+<style>
+  :root{
+    --bg: #f2f4f6;
+    --card: #fff;
+    --accent: #0ea5a3;
+    --danger: #dc2626;
+    --shadow: 0 10px 30px rgba(2,6,23,0.08);
+  }
+  *{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;}
+  html,body,#app{height:100%;margin:0;}
+  body{background:linear-gradient(180deg,#eef2f7 0%,var(--bg) 100%);display:flex;align-items:stretch;justify-content:center;}
+  .wrap{width:100%;height:100%;padding:12px;display:flex;align-items:stretch;justify-content:center;}
+  .panel{width:100%;max-width:1300px;background:var(--card);border-radius:12px;padding:14px;box-shadow:var(--shadow);display:flex;gap:16px;align-items:flex-start;}
+  .left{flex:1;display:flex;flex-direction:column;gap:12px;align-items:center;}
+  .controls{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .btn{background:var(--accent);color:white;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
+  .status{padding:8px 12px;border-radius:8px;background:#f8fafc;border:1px solid #eef3f6;font-size:14px}
+  .playground{width:100%;display:flex;align-items:center;justify-content:center;height:78vh;min-height:460px;position:relative;background:repeating-linear-gradient(180deg, rgba(0,0,0,0.02) 0 1px, transparent 1px 40px);border-radius:8px;padding:18px}
+  .tower{width:420px;display:flex;flex-direction:column-reverse;align-items:center;transition:transform 0.6s ease;transform-origin:center bottom;}
+  .row{display:flex;gap:12px;margin:8px 0;transition:transform 0.35s ease,opacity 0.35s ease;align-items:center;justify-content:center;}
+  .row.even{} .row.odd{transform:rotate(90deg)}
+  .block{width:140px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,0.12) inset;background-size:cover;border:1px solid rgba(0,0,0,0.07);cursor:pointer;user-select:none;transition:transform .18s,opacity .18s;}
+  .block:hover{transform:translateY(-4px) scale(1.02)}
+  .block.removed{opacity:0.16;pointer-events:none;}
+  .block.locked{cursor:not-allowed;opacity:0.7}
+  .overlay-collapse{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+  .collapse-text{font-size:40px;color:var(--danger);font-weight:800;text-shadow:0 6px 18px rgba(220,38,38,0.12)}
+  .right{width:320px;display:flex;flex-direction:column;gap:12px}
+  .box{background:#fff;border-radius:10px;padding:12px;box-shadow:var(--shadow)}
+  .messages{height:220px;overflow:auto;font-size:14px;color:#0f172a}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.5);display:flex;align-items:center;justify-content:center;z-index:1000}
+  .modal{width:94%;max-width:720px;background:#fff;border-radius:12px;padding:18px;box-shadow:0 20px 60px rgba(2,6,23,0.35)}
+  .input{flex:1;padding:10px 12px;border-radius:8px;border:1px solid #e6e9ee;font-size:15px}
+  .hint{font-size:12px;color:#94a3b8;margin-top:8px}
+  @media (max-width:980px){.panel{flex-direction:column}.right{width:100%}.tower{width:78%}.block{width:110px}}
+  @keyframes fallaway {
+    0%{ transform: translateY(0) rotate(0) scale(1); opacity:1; }
+    100%{ transform: translateY(600px) rotate(75deg) scale(0.2); opacity:0; }
+  }
+  .fall { animation: fallaway 1s ease forwards; }
+</style>
+</head>
+<body>
+<div id="app" class="wrap">
+  <div class="panel" role="application" aria-label="Jenga with English questions">
+    <div class="left">
+      <div style="width:100%;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <h1 style="margin:0;font-size:20px">Jenga — English Questions</h1>
+          <div style="color:#64748b;font-size:13px">Click a block (not in top two rows). Answer in English — correct → block moved to top, wrong → collapse.</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button id="resetBtn" class="btn">Reset</button>
+          <div class="status">Turns: <span id="turns">0</span></div>
+          <div class="status">Rows: <span id="rowsCount">0</span></div>
+        </div>
+      </div>
+
+      <div class="playground">
+        <div class="tower" id="tower"></div>
+        <div class="overlay-collapse" id="collapseOverlay" style="display:none">
+          <div class="collapse-text">Tower collapsed 💥</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="box">
+        <h3 style="margin:0 0 8px 0">Last messages</h3>
+        <div class="messages" id="messages"><div style="color:#94a3b8">No messages yet.</div></div>
+      </div>
+
+      <div class="box">
+        <h3 style="margin:0 0 8px 0">Rules (simplified)</h3>
+        <div style="font-size:13px;color:#334155">
+          <ul style="margin:8px 0 0 18px;padding:0">
+            <li>Нельзя трогать дощечки из верхних двух уровней.</li>
+            <li>Клик — появляется вопрос. Правильно — дощечка перемещается наверх.</li>
+            <li>Неправильный ответ — башня рушится (игра окончена).</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="box" style="display:flex;flex-direction:column;gap:8px;">
+        <h3 style="margin:0">Tips</h3>
+        <div style="color:#64748b;font-size:13px">Answers are case-insensitive. Edit the QUESTIONS array in index.html to change or add questions.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal template -->
+<div id="modalTpl" style="display:none">
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h2 id="qTitle">Answer in English</h2>
+      <p id="qText"></p>
+      <form id="answerForm" style="display:flex;gap:8px;align-items:center">
+        <input id="answerInput" class="input" autocomplete="off" placeholder="Type your answer here..." />
+        <button class="btn" type="submit">Submit</button>
+        <button id="cancelBtn" type="button" class="btn" style="background:transparent;color:#0f172a;border:1px solid #e6e9ee">Cancel</button>
+      </form>
+      <div class="hint">Tip: some questions accept multiple correct answers.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  { q: "What is the past tense of 'go'?", a: ["went"] },
+  { q: "Translate to English: 'книга'", a: ["book"] },
+  { q: "What is the opposite of 'hot'?", a: ["cold"] },
+  { q: "Spell the number 7 in English.", a: ["seven"] },
+  { q: "What is the English word for 'дом'?", a: ["house"] },
+  { q: "Complete: I ___ (to be) happy yesterday.", a: ["was"] },
+  { q: "What is the plural of 'mouse'?", a: ["mice"] },
+  { q: "What color is the sky on a clear day?", a: ["blue"] },
+  { q: "What is 2 + 2 in English?", a: ["4","four"] },
+  { q: "What is the English word for 'яблоко'?", a: ["apple"] },
+  { q: "What is the comparative of 'big'?", a: ["bigger"] },
+  { q: "Translate to English: 'спасибо'", a: ["thank you","thanks"] },
+  { q: "Which article: ___ apple (a/an/the)?", a: ["an"] },
+  { q: "What is the past of 'eat'?", a: ["ate"] },
+  { q: "What is the English for 'работать'?", a: ["work","to work"] },
+  { q: "How do you say 'доброе утро' in English?", a: ["good morning"] },
+  { q: "Choose the correct pronoun: ___ am happy. (I / Me)", a: ["i"] },
+  { q: "What is the plural form of 'child'?", a: ["children"] },
+  { q: "Translate: 'машина' (English)", a: ["car"] },
+  { q: "Which is correct? 'He ___ to school.' (go/goes/went)", a: ["goes","went","go"] },
+  { q: "Fill: 'She has ___ apple.' (a/an/the)", a: ["an","a","the"] },
+  { q: "What is the adjective in: 'The tall man walked.'", a: ["tall"] },
+  { q: "What is the English word for 'вода'?", a: ["water"] },
+  { q: "How do you say 10 in words?", a: ["ten"] },
+  { q: "Past participle of 'write'?", a: ["written"] },
+  { q: "Opposite of 'easy'?", a: ["hard","difficult"] },
+  { q: "What is the verb in 'She reads books.'?", a: ["reads","read"] },
+  { q: "Translate to English: 'кошка'", a: ["cat"] },
+  { q: "What is the English word for 'дверь'?", a: ["door"] }
+];
+
+const INITIAL_ROWS = 18;
+const BLOCKS_PER_ROW = 3;
+let tower = [];
+let turns = 0;
+let gameOver = false;
+let currentSelection = null;
+let modal = null;
+
+const towerEl = document.getElementById('tower');
+const messagesEl = document.getElementById('messages');
+const turnsEl = document.getElementById('turns');
+const rowsCountEl = document.getElementById('rowsCount');
+const resetBtn = document.getElementById('resetBtn');
+const collapseOverlay = document.getElementById('collapseOverlay');
+
+function randInt(max){ return Math.floor(Math.random()*max); }
+function pickQuestion(){ return QUESTIONS[randInt(QUESTIONS.length)]; }
+function addMessage(text){
+  const el = document.createElement('div');
+  el.style.padding = '6px 8px';
+  el.style.marginBottom = '6px';
+  el.style.borderRadius = '6px';
+  el.textContent = text;
+  messagesEl.prepend(el);
+}
+
+function makeInitialTower(){
+  const arr=[];
+  for(let r=0;r<INITIAL_ROWS;r++){
+    const row=[];
+    for(let b=0;b<BLOCKS_PER_ROW;b++){
+      row.push({ id:`${r}-${b}`, row:r, pos:b, removed:false, texture: (b%2===0? 'wood1':'wood2') });
+    }
+    arr.push(row);
+  }
+  return arr;
+}
+
+function renderTower(){
+  towerEl.innerHTML = '';
+  const visible = tower.filter(row => row.some(b => !b.removed));
+  rowsCountEl.textContent = visible.length;
+  for(let i=0;i<visible.length;i++){
+    const row = visible[i];
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'row ' + ((i%2===0)? 'even':'odd');
+    for(let j=0;j<row.length;j++){
+      const block = row[j];
+      const bEl = document.createElement('div');
+      bEl.className = 'block';
+      if(block.removed) bEl.classList.add('removed');
+      if(block.locked) bEl.classList.add('locked');
+      const tex = block.texture === 'wood1' ? 'assets/wood1.svg' : 'assets/wood2.svg';
+      bEl.style.backgroundImage = `url("${tex}")`;
+      bEl.setAttribute('data-row', tower.indexOf(row));
+      bEl.setAttribute('data-pos', j);
+      bEl.onclick = () => onclickBlock(tower.indexOf(row), j, block);
+      rowDiv.appendChild(bEl);
+    }
+    towerEl.appendChild(rowDiv);
+  }
+}
+
+function onclickBlock(rowIdx,posIdx,block){
+  if(gameOver) return;
+  if(block.removed) return;
+  const visibleRows = tower.filter(r=>r.some(b=>!b.removed));
+  const visibleIndex = visibleRows.indexOf(tower[rowIdx]);
+  const lastVisibleIndex = visibleRows.length - 1;
+  if(visibleIndex >= lastVisibleIndex - 1){
+    addMessage("You can't remove blocks from the top two rows.");
+    return;
+  }
+  currentSelection = { rowIdx, posIdx, block };
+  const q = pickQuestion();
+  showModal(q);
+}
+
+function createModal(){ const tpl = document.getElementById('modalTpl'); const clone = tpl.firstElementChild.cloneNode(true); document.body.appendChild(clone); return clone; }
+function showModal(question){
+  if(modal) destroyModal();
+  modal = createModal();
+  const qText = modal.querySelector('#qText');
+  const form = modal.querySelector('#answerForm');
+  const input = modal.querySelector('#answerInput');
+  const cancelBtn = modal.querySelector('#cancelBtn');
+  qText.textContent = question.q;
+  input.value = '';
+  input.focus();
+  form.onsubmit = (e) => {
+    e.preventDefault();
+    const ans = input.value.trim().toLowerCase();
+    if(ans.length === 0) return;
+    const ok = question.a.some(acc => acc.toLowerCase() === ans);
+    if(ok){
+      applyCorrect();
+      addMessage('Correct! Block moved to top.');
+    } else {
+      addMessage('Wrong answer. Correct answers: ' + question.a.join(', '));
+      applyCollapse();
+    }
+    destroyModal();
+  };
+  cancelBtn.onclick = () => { destroyModal(); currentSelection=null; };
+}
+function destroyModal(){ if(!modal) return; modal.remove(); modal=null; }
+
+function applyCorrect(){
+  if(!currentSelection) return;
+  const { rowIdx, posIdx } = currentSelection;
+  tower[rowIdx][posIdx].removed = true;
+  const newRow = [];
+  const ts = Date.now();
+  for(let i=0;i<BLOCKS_PER_ROW;i++){
+    newRow.push({ id:`moved-${ts}-${i}`, row:tower.length, pos:i, removed:true, texture: (i%2===0? 'wood1':'wood2') });
+  }
+  newRow[Math.floor(BLOCKS_PER_ROW/2)].removed = false;
+  tower.push(newRow);
+  turns++;
+  turnsEl.textContent = turns;
+  renderTower();
+  currentSelection = null;
+}
+
+function applyCollapse(){
+  gameOver = true;
+  const blocks = towerEl.querySelectorAll('.block');
+  blocks.forEach((b,idx)=>{ setTimeout(()=> b.classList.add('fall'), idx*25); });
+  collapseOverlay.style.display = 'flex';
+  addMessage('Game over — tower collapsed.');
+}
+
+function resetGame(){
+  tower = makeInitialTower();
+  turns = 0; gameOver=false; currentSelection=null;
+  turnsEl.textContent = '0';
+  rowsCountEl.textContent = tower.filter(r=>r.some(b=>!b.removed)).length;
+  collapseOverlay.style.display = 'none';
+  messagesEl.innerHTML = '<div style="color:#94a3b8">No messages yet.</div>';
+  renderTower();
+}
+
+function init(){
+  tower = makeInitialTower();
+  renderTower();
+  resetBtn.onclick = resetGame;
+  window.addEventListener('keydown',(e)=>{ if(e.key==='Escape' && modal) { destroyModal(); currentSelection=null; } });
+  turnsEl.textContent = turns;
+  rowsCountEl.textContent = tower.filter(r=>r.some(b=>!b.removed)).length;
+}
+init();
+</script>
+</body>
+</html>
